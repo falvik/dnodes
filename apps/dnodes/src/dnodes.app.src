@@ -1,0 +1,12 @@
+{application, dnodes,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { dnodes_app, []}},
+  {env, []}
+ ]}.
