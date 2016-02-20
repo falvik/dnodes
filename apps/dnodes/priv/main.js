@@ -80,7 +80,12 @@ function repaint(json){
     var y0 = 1.1 * k;
     var rx = 70;
     var ry = 20;
+    var x_offset = 3;
+    var y_offset = 14;
     var font_size = 12;
+    var rx_text;
+
+    // Draw links between nodes.
     for(var a = 0; a < json.length; a++){
         var z = 2 * Math.PI * a / json.length;
         var x = x0 + k*Math.sin(z)*2;
@@ -117,6 +122,7 @@ function repaint(json){
             }
         }
     }
+    // Draw nodes and print their id's.
     for(var a = 0; a < json.length; a++){
         var x = json[a].x;
         var y = json[a].y;
@@ -129,12 +135,24 @@ function repaint(json){
         rect.setAttribute("style","fill:rgb(255,255,255);stroke-width:1;stroke:rgb(0,0,0)");
         g.appendChild(rect);
         var text = document.createElementNS("http://www.w3.org/2000/svg", 'text');
-        text.setAttribute("x", x+3);
-        text.setAttribute("y", y+14);
+        text.setAttribute("x", x + x_offset);
+        text.setAttribute("y", y + y_offset);
         text.setAttribute("font-size",font_size);
         text.textContent = json[a].node_id;
         g.appendChild(text);
         svg.appendChild(g);
+
+        rx_text = text.getComputedTextLength();
+        if(rx_text > rx){
+            rect.setAttribute("width", rx_text + 2 * x_offset);
+            var x_rect = x + rx/2 - (rx_text/2 + x_offset)
+            if(x_rect < 1)  x_rect = 1;
+            rect.setAttribute("x",x_rect);
+            var x_text = x + rx/2 - rx_text/2;
+            if(x_text < x_offset)  x_text = x_offset;
+            text.setAttribute("x",x_text);
+        }
+        //console.log(a + ":" + text.getComputedTextLength());
     }
 }
 

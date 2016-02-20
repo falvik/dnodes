@@ -9,6 +9,9 @@ rel/example_project
 .concrete/DEV_MODE
 .rebar
 
+# idea ide
+.idea
+*.iml
 # =========================
 # Operating System Files
 # =========================
