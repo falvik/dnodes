@@ -10,8 +10,8 @@ rel/example_project
 .rebar
 
 # idea ide
-./.idea
-
+.idea
+*.iml
 # =========================
 # Operating System Files
 # =========================
