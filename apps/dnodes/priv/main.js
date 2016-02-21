@@ -4,6 +4,9 @@ var connected = false;
 var tasksId = 0;
 var tasks = {};
 var sent = {};
+var keypressed = {};
+var selectedNode;
+var newlink;
 
 function connect(){
     socket = new WebSocket("ws://" + window.location.host
@@ -73,6 +76,7 @@ function doSend(){
 }
 
 function repaint(json){
+    selectedNode = undefined;
     var svg = document.getElementById("svg");
     while (svg.lastChild) {svg.removeChild(svg.lastChild);}
     var k = 150;
@@ -139,8 +143,11 @@ function repaint(json){
         text.setAttribute("y", y + y_offset);
         text.setAttribute("font-size",font_size);
         text.textContent = json[a].node_id;
+        g.setAttribute("nodeid", json[a].node_id);
         g.appendChild(text);
         svg.appendChild(g);
+
+        g.setAttribute("onmousedown","mousedownNode(evt)");
 
         rx_text = text.getComputedTextLength();
         if(rx_text > rx){
@@ -156,6 +163,40 @@ function repaint(json){
     }
 }
 
+function mousedownNode(evt){
+    if(selectedNode){
+        //selectedNode - начало, evt.target.parentElement - конец, отрабатываем
+        var node1 = selectedNode.getAttribute('nodeid');
+        var node2 = evt.target.parentElement.getAttribute('nodeid');
+        addTask({"command":"addLink", "nodeId1":node1, "nodeId2":node2});
+        svg.removeChild(newlink);
+        selectedNode = undefined;
+        newlink = undefined;
+        $(document).off("mousemove");
+    } else {
+        selectedNode = evt.target.parentElement;
+        var rect = selectedNode.childNodes[0];
+        var offset = $(svg).offset();
+        var x1 = rect.getAttribute("x");
+        var y1 = rect.getAttribute("y");
+        newlink = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+        newlink.setAttribute("x1", x1);
+        newlink.setAttribute("y1", y1);
+        newlink.setAttribute("x2", x1);
+        newlink.setAttribute("y2", y1);
+        newlink.setAttribute("style","stroke:rgb(0,0,0);stroke-width:1;fill:none");
+        svg.appendChild(newlink);
+        $(document).mousemove(function(evt){
+            var x2 = evt.pageX - offset.left;
+            var y2 = evt.pageY - offset.top;
+            var dx = (x2 - x1)/Math.abs(x2-x1);
+            var dy = (y2 - y1)/Math.abs(y2-y1);
+            newlink.setAttribute("x2", evt.pageX - offset.left - dx);
+            newlink.setAttribute("y2", evt.pageY - offset.top - dy);
+        });
+    }
+}
+
 function newNode(){
     addTask({"command":"newNode"});
 }
@@ -165,12 +206,6 @@ function deleteNode(){
     addTask({"command":"deleteNode", "nodeId": deleteNodeId});
 }
 
-function addLink(){
-    var node1 = $("#addLink1").val();
-    var node2 = $("#addLink2").val();
-    addTask({"command":"addLink", "nodeId1":node1, "nodeId2":node2});
-}
-
 function deleteLink(){
     var node1 = $("#deleteLink1").val();
     var node2 = $("#deleteLink2").val();
@@ -178,6 +213,14 @@ function deleteLink(){
 }
 
 function start(){
+    $(document).keydown(function(e){
+        keypressed[e.which] = true;
+        console.log(e.which + " down " + Object.keys(keypressed).length);
+    });
+    $(document).keyup(function(e){
+        delete keypressed[e.which];
+        console.log(e.which + " up " + Object.keys(keypressed).length);
+    });
     connect();
     addTask({"command":"nodes_info"}, function(nodes){repaint(nodes);});
 }
