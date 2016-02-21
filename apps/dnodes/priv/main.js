@@ -159,7 +159,7 @@ function repaint(json){
             if(x_text < x_offset)  x_text = x_offset;
             text.setAttribute("x",x_text);
         }
-        //console.log(a + ":" + text.getComputedTextLength());
+
     }
 }
 
