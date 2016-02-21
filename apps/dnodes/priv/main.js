@@ -177,8 +177,8 @@ function mousedownNode(evt){
         selectedNode = evt.target.parentElement;
         var rect = selectedNode.childNodes[0];
         var offset = $(svg).offset();
-        var x1 = rect.getAttribute("x");
-        var y1 = rect.getAttribute("y");
+        var x1 = +rect.getAttribute("x") + rect.getAttribute("width") / 2;
+        var y1 = +rect.getAttribute("y") + rect.getAttribute("height") / 2;
         newlink = document.createElementNS("http://www.w3.org/2000/svg", 'line');
         newlink.setAttribute("x1", x1);
         newlink.setAttribute("y1", y1);
