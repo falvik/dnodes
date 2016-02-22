@@ -108,19 +108,39 @@ function repaint(json){
                 var cy1 = (y0 + y1)/2;
                 var cx2 = (x0+rx/2 + x2)/2;
                 var cy2 = (y0 + y2)/2;
+
+                var arc_path = false;
                 if(a == (b+1) || (b==0 && a == json.length-1)){
-                    cx1 = x1;
-                    cy1 = y1;
-                    cx2 = x2;
-                    cy2 = y2;
+                    if(json.length==2){
+                        cx1 = x1;
+                        cy1 = y1;
+                        cx2 = x2;
+                        cy2 = y2;
+                    }
+                    else{
+                        arc_path =true;
+                        // cx1 as sweep arc flag
+                        // 1 arc will be drawn in a "positive-angle" direction
+                        cx1 = (b==0 && a == json.length-1) ? 1 : 0;
+                    }
                 }
+
+
                 var path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-                path.setAttribute("d","M"
+                if(!arc_path)
+                    path.setAttribute("d","M"
                           +  x1 + " " +  y1 + " C "
                           + cx1 + " " + cy1 + " " +
                             cx2 + " " + cy2 + " " +
                              x2 + " " +  y2
-                 );
+                    );
+                else
+                    path.setAttribute("d","M"
+                          +  x1 + " " +  y1 + " A "
+                          + k*2 + " " + k + " " +
+                          0 + " " + 0 + " " + cx1 + " " +
+                          x2 + " " +  y2
+                    );
                 path.setAttribute("style","stroke:rgb(0,0,0);stroke-width:1;fill:none");
                 svg.appendChild(path);
             }
