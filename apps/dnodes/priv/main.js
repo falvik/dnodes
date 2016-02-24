@@ -13,10 +13,13 @@ function connect(){
      + "/websocket");
     socket.onopen = function(){
         connected = true;
+        updateCounter();
+        addTask({"command":"nodes_info"}, function(nodes){repaint(nodes);});
         doSend();
     };
     socket.onclose = function(){
         connected = false;
+        updateCounter();
         sent = {};
         window.setTimeout(function(){connect();}, 1000);
     }
@@ -27,6 +30,7 @@ function connect(){
     };
     socket.onerror = function(){
         connected = false;
+        updateCounter();
         sent = {};
         window.setTimeout(function(){connect();}, 1000);
     };
@@ -52,6 +56,7 @@ function addTask(request, callback){
         task = {"request":request};
     }
     tasks[id] = task;
+    updateCounter();
     if(connected){
         doSend();
     }
@@ -68,6 +73,7 @@ function doSend(){
         }
         if(!err){
             delete tasks[id];
+            updateCounter();
             if(task.callback){
                 sent[id] = task;
             }
@@ -243,4 +249,16 @@ function start(){
     });
     connect();
     addTask({"command":"nodes_info"}, function(nodes){repaint(nodes);});
+}
+
+function updateCounter(){
+    var counter = document.getElementById("taskCounter");
+    var count = Object.keys(tasks).length;
+    counter.innerHTML = count;
+    if(connected){
+        counter.style.color = "green";
+    } else {
+        counter.style.color = "red";
+    }
+
 }
