@@ -1,4 +1,5 @@
 //var sessionId;
+var svg;
 var socket;
 var connected = false;
 var tasksId = 0;
@@ -7,6 +8,7 @@ var sent = {};
 var keypressed = {};
 var selectedNode;
 var newlink;
+var mode = "default";
 
 function connect(){
     socket = new WebSocket("ws://" + window.location.host
@@ -190,17 +192,29 @@ function repaint(json){
 }
 
 function mousedownNode(evt){
+    var node = evt.target.parentElement;
+    switch (mode){
+        case "link":
+            doLink(node);
+            break;
+        case "delete":
+            doDelete(node);
+            break;
+    }
+}
+
+function doLink(node){
     if(selectedNode){
         //selectedNode - начало, evt.target.parentElement - конец, отрабатываем
         var node1 = selectedNode.getAttribute('nodeid');
-        var node2 = evt.target.parentElement.getAttribute('nodeid');
+        var node2 = node.getAttribute('nodeid');
         addTask({"command":"addLink", "nodeId1":node1, "nodeId2":node2});
         svg.removeChild(newlink);
         selectedNode = undefined;
         newlink = undefined;
         $(document).off("mousemove");
     } else {
-        selectedNode = evt.target.parentElement;
+        selectedNode = node;
         var rect = selectedNode.childNodes[0];
         var offset = $(svg).offset();
         var x1 = +rect.getAttribute("x") + rect.getAttribute("width") / 2;
@@ -217,10 +231,15 @@ function mousedownNode(evt){
             var y2 = evt.pageY - offset.top;
             var dx = (x2 - x1)/Math.abs(x2-x1);
             var dy = (y2 - y1)/Math.abs(y2-y1);
-            newlink.setAttribute("x2", evt.pageX - offset.left - dx);
-            newlink.setAttribute("y2", evt.pageY - offset.top - dy);
+            newlink.setAttribute("x2", evt.pageX - offset.left - (isNaN(dx)?0:dx));
+            newlink.setAttribute("y2", evt.pageY - offset.top - (isNaN(dy)?0:dy));
         });
     }
+}
+
+function doDelete(node){
+    var nodeId = node.getAttribute('nodeid');
+    addTask({"command":"deleteNode", "nodeId": nodeId});
 }
 
 function newNode(){
@@ -239,13 +258,36 @@ function deleteLink(){
 }
 
 function start(){
+    svg = document.getElementById("svg");
     $(document).keydown(function(e){
+        switch (e.which){
+            case 68://D
+                mode = "delete";
+                svg.style.cursor = "crosshair";
+                break;
+            case 76://L
+                mode = "link";
+                svg.style.cursor = "help";
+                break;
+        }
         keypressed[e.which] = true;
-        console.log(e.which + " down " + Object.keys(keypressed).length);
     });
     $(document).keyup(function(e){
+        switch (e.which){
+            case 68://D
+            case 76://L
+                mode = "default";
+                svg.style.cursor = "default";
+                break;
+        }
         delete keypressed[e.which];
-        console.log(e.which + " up " + Object.keys(keypressed).length);
+    });
+    $(document).keypress(function(e){
+        switch (e.which){
+            case 110:
+                newNode();
+                break;
+        }
     });
     connect();
     addTask({"command":"nodes_info"}, function(nodes){repaint(nodes);});
