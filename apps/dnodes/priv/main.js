@@ -195,7 +195,10 @@ function mousedownNode(evt){
     var node = evt.target.parentElement;
     switch (mode){
         case "link":
-            doLink(node);
+            doLink(node, true);
+            break;
+        case "unlink":
+            doLink(node, false);
             break;
         case "delete":
             doDelete(node);
@@ -203,12 +206,16 @@ function mousedownNode(evt){
     }
 }
 
-function doLink(node){
+function doLink(node, isCreating){
     if(selectedNode){
         //selectedNode - начало, evt.target.parentElement - конец, отрабатываем
         var node1 = selectedNode.getAttribute('nodeid');
         var node2 = node.getAttribute('nodeid');
-        addTask({"command":"addLink", "nodeId1":node1, "nodeId2":node2});
+        if(isCreating) {
+            addTask({"command":"addLink", "nodeId1":node1, "nodeId2":node2});
+        } else {
+            addTask({"command":"deleteLink", "nodeId1":node1, "nodeId2":node2});
+        }
         svg.removeChild(newlink);
         selectedNode = undefined;
         newlink = undefined;
@@ -219,12 +226,13 @@ function doLink(node){
         var offset = $(svg).offset();
         var x1 = +rect.getAttribute("x") + rect.getAttribute("width") / 2;
         var y1 = +rect.getAttribute("y") + rect.getAttribute("height") / 2;
+        var color = isCreating ? "rgb(0,255,0)" : "rgb(255,0,0)";
         newlink = document.createElementNS("http://www.w3.org/2000/svg", 'line');
         newlink.setAttribute("x1", x1);
         newlink.setAttribute("y1", y1);
         newlink.setAttribute("x2", x1);
         newlink.setAttribute("y2", y1);
-        newlink.setAttribute("style","stroke:rgb(0,0,0);stroke-width:1;fill:none");
+        newlink.setAttribute("style","stroke:"+color +";stroke-width:3;fill:none");
         svg.appendChild(newlink);
         $(document).mousemove(function(evt){
             var x2 = evt.pageX - offset.left;
@@ -266,8 +274,14 @@ function start(){
                 svg.style.cursor = "crosshair";
                 break;
             case 76://L
+                if(newlink) newlink.setAttribute("style","stroke:rgb(0,255,0);stroke-width:3;fill:none");
                 mode = "link";
                 svg.style.cursor = "help";
+                break;
+            case 85://U
+                if(newlink) newlink.setAttribute("style","stroke:rgb(255,0,0);stroke-width:3;fill:none");
+                mode = "unlink";
+                svg.style.cursor = "no-drop";
                 break;
         }
         keypressed[e.which] = true;
@@ -276,6 +290,8 @@ function start(){
         switch (e.which){
             case 68://D
             case 76://L
+            case 85://U
+                if(newlink) newlink.setAttribute("style","stroke:rgb(150,150,150);stroke-width:3;fill:none");
                 mode = "default";
                 svg.style.cursor = "default";
                 break;
