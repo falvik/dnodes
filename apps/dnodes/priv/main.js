@@ -201,7 +201,8 @@ function mousedownNode(evt){
             doLink(node, false);
             break;
         case "delete":
-            doDelete(node);
+            var nodeId = node.getAttribute('nodeid');
+            addTask({"command":"deleteNode", "nodeId": nodeId});
             break;
     }
 }
@@ -245,26 +246,6 @@ function doLink(node, isCreating){
     }
 }
 
-function doDelete(node){
-    var nodeId = node.getAttribute('nodeid');
-    addTask({"command":"deleteNode", "nodeId": nodeId});
-}
-
-function newNode(){
-    addTask({"command":"newNode"});
-}
-
-function deleteNode(){
-    var deleteNodeId = $("#deleteNodeId").val();
-    addTask({"command":"deleteNode", "nodeId": deleteNodeId});
-}
-
-function deleteLink(){
-    var node1 = $("#deleteLink1").val();
-    var node2 = $("#deleteLink2").val();
-    addTask({"command":"deleteLink", "nodeId1":node1, "nodeId2":node2});
-}
-
 function start(){
     svg = document.getElementById("svg");
     $(document).keydown(function(e){
@@ -301,7 +282,7 @@ function start(){
     $(document).keypress(function(e){
         switch (e.which){
             case 110:
-                newNode();
+                addTask({"command":"newNode"});
                 break;
         }
     });
