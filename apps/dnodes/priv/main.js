@@ -106,7 +106,7 @@ function repaint(json){
         json[a].y=y;
         for(var b = 0; b < a; b++){
             var id = json[b].node_id;
-            if(json[a].links.includes(id)){
+            if(json[a].links.indexOf(id) >= 0){
                 //рисуем линию
                 var x1 = json[a].x + rx/2;
                 var y1 = json[a].y + ry/2;
