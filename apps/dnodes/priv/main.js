@@ -87,11 +87,11 @@ function repaint(json){
     selectedNode = undefined;
     var svg = document.getElementById("svg");
     while (svg.lastChild) {svg.removeChild(svg.lastChild);}
-    var k = 150;
-    var x0 = 2.1 * k;
+    var k = 250;
+    var x0 = 1.1 * k;
     var y0 = 1.1 * k;
-    var rx = 70;
-    var ry = 20;
+    var rx = 0;
+    var ry = 0;
     var x_offset = 3;
     var y_offset = 14;
     var font_size = 12;
@@ -100,7 +100,7 @@ function repaint(json){
     // Draw links between nodes.
     for(var a = 0; a < json.length; a++){
         var z = 2 * Math.PI * a / json.length;
-        var x = x0 + k*Math.sin(z)*2;
+        var x = x0 + k*Math.sin(z);
         var y = y0 - k*Math.cos(z);
         json[a].x=x;
         json[a].y=y;
@@ -108,6 +108,7 @@ function repaint(json){
             var id = json[b].node_id;
             if(json[a].links.indexOf(id) >= 0){
                 //рисуем линию
+                /*
                 var x1 = json[a].x + rx/2;
                 var y1 = json[a].y + ry/2;
                 var x2 = json[b].x + rx/2;
@@ -115,6 +116,15 @@ function repaint(json){
                 var cx1 = (x0+rx/2 + x1)/2;
                 var cy1 = (y0 + y1)/2;
                 var cx2 = (x0+rx/2 + x2)/2;
+                var cy2 = (y0 + y2)/2;
+                */
+                var x1 = json[a].x;
+                var y1 = json[a].y;
+                var x2 = json[b].x;
+                var y2 = json[b].y;
+                var cx1 = (x0 + x1)/2;
+                var cy1 = (y0 + y1)/2;
+                var cx2 = (x0 + x2)/2;
                 var cy2 = (y0 + y2)/2;
 
                 var arc_path = false;
@@ -159,7 +169,13 @@ function repaint(json){
         var x = json[a].x;
         var y = json[a].y;
         var g = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        var rect = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
+        var circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+        circle.setAttribute("cx", x);
+        circle.setAttribute("cy", y);
+        circle.setAttribute("r", 10);
+        circle.setAttribute("style","fill:rgb(255,255,255);stroke-width:1;stroke:rgb(0,0,0)");
+        g.appendChild(circle);
+        /*var rect = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
         rect.setAttribute("width", rx);
         rect.setAttribute("height", ry);
         rect.setAttribute("x", x);
@@ -171,12 +187,14 @@ function repaint(json){
         text.setAttribute("y", y + y_offset);
         text.setAttribute("font-size",font_size);
         text.textContent = json[a].node_id;
-        g.setAttribute("nodeid", json[a].node_id);
         g.appendChild(text);
+        */
+        g.setAttribute("nodeid", json[a].node_id);
         svg.appendChild(g);
 
         g.setAttribute("onmousedown","mousedownNode(evt)");
 
+        /*
         rx_text = text.getComputedTextLength();
         if(rx_text > rx){
             rect.setAttribute("width", rx_text + 2 * x_offset);
@@ -187,7 +205,7 @@ function repaint(json){
             if(x_text < x_offset)  x_text = x_offset;
             text.setAttribute("x",x_text);
         }
-
+        */
     }
 }
 
@@ -225,8 +243,8 @@ function doLink(node, isCreating){
         selectedNode = node;
         var rect = selectedNode.childNodes[0];
         var offset = $(svg).offset();
-        var x1 = +rect.getAttribute("x") + rect.getAttribute("width") / 2;
-        var y1 = +rect.getAttribute("y") + rect.getAttribute("height") / 2;
+        var x1 = +rect.getAttribute("cx") + rect.getAttribute("width") / 2;
+        var y1 = +rect.getAttribute("cy") + rect.getAttribute("height") / 2;
         var color = isCreating ? "rgb(0,255,0)" : "rgb(255,0,0)";
         newlink = document.createElementNS("http://www.w3.org/2000/svg", 'line');
         newlink.setAttribute("x1", x1);
