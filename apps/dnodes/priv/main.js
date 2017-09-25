@@ -155,7 +155,7 @@ function repaint(json){
                 else
                     path.setAttribute("d","M"
                           +  x1 + " " +  y1 + " A "
-                          + k*2 + " " + k + " " +
+                          + k + " " + k + " " +
                           0 + " " + 0 + " " + cx1 + " " +
                           x2 + " " +  y2
                     );
